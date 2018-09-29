@@ -76,7 +76,7 @@ var properties =
         { key: "ZW", value: "5座", url: "car/0_0-0.0_0.0-0-0-0-0-0-0-5-0/" },
         { key: "ZW", value: "6座", url: "car/0_0-0.0_0.0-0-0-0-0-0-0-6-0/" },
         { key: "ZW", value: "7座", url: "car/0_0-0.0_0.0-0-0-0-0-0-0-7-0/" },
-        { key: "ZW", value: "7座以上", url: "car/0_0-0.0_0.0-0-0-0-0-0-0-8-0/" },
+        { key: "ZW", value: "7座以上", url: "car/0_0-0.0_0.0-0-0-0-0-0-0-8-0/" }
     ];
 
 var data = [];
@@ -166,7 +166,18 @@ function fetchProperty(property, callback) {
 function fetchData(seriesId, key, value) {
     for (let i = 0; i < data.length; i++) {
         if (data[i].seriesId == seriesId) {
-            data[i][key] = value;
+            if (data[i][key] == undefined)
+                data[i][key] = [];
+
+            let isExists = false;
+
+            data[i][key].forEach(element => {
+                if (element == value)
+                    isExists = true;
+            });
+
+            if (!isExists)
+                data[i][key].push(value);
         }
     }
 }
@@ -199,28 +210,40 @@ function saveDataToMySQL() {
 
     for (let i = 0; i < data.length; i++) {
         let item = data[i];
-        values.push([item.groupName, item.brandName, item.factoryName, item.seriesId, item.seriesName, item.price, item.JB, item.PL, item.QD, item.NY, item.BSX, item.GB, item.SCFS, item.JG, item.ZW]);
+
+        values.push([item.groupName, item.brandName, item.factoryName, item.seriesId, item.seriesName, item.price,
+            arrayToString(item.JB), arrayToString(item.PL), arrayToString(item.QD), arrayToString(item.NY), arrayToString(item.BSX), arrayToString(item.GB), arrayToString(item.SCFS), arrayToString(item.JG), arrayToString(item.ZW)]);
     }
 
     let connection = mysql.createConnection({
         host: 'localhost',
         user: 'root',
         password: 'root',
-        database: 'test'
+        database: 'kaiba'
     });
 
     connection.connect();
 
-    let sql = "insert into autohome(group_name, brand_name, factory_name, series_id, series_name, price, jb, pl, qd, ny, bsx, gb, scfs, jg, zw) values ?";
+    let sql = "insert into autohome(`group`, `brand`, `factory`, `series_id`, `series`, `price`, `jb`, `pl`, `qd`, `ny`, `bsx`, `gb`, `scfs`, `jg`, `zw`) values ?";
 
     connection.query(sql, [values], function (err, rows, fields) {
-        if (err)
-            console.log("数据保存到数据库失败。");
-        else
+        if (err) {
+            console.log("数据保存到数据库失败！");
+            console.log("错误信息：");
+            console.log(err.message);
+        } else {
             console.log("数据成功保存到数据库。");
+        }            
     });
 
     connection.end();
+}
+
+function arrayToString(a) {
+    if (a != undefined && a != null)
+        a = a.join("|");
+    
+    return a;
 }
 
 function app() {
@@ -244,7 +267,7 @@ function app() {
 }
 
 function fetchProperties() {
-    async.mapLimit(properties, 1, function (property, callback) {
+    async.mapLimit(properties, 4, function (property, callback) {
         propertiesCounter++;
         console.log(propertiesCounter + "/" + properties.length);
         fetchProperty(property, callback);
