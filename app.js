@@ -10,8 +10,8 @@ var autohome_root_url = "http://www.autohome.com.cn/";
 var properties =
     [
         // 生产方式
-        { key: "SCFS", value: "国产", url: "car/0_0-0.0_0.0-0-0-0-1-0-0-0-0" },
-        { key: "SCFS", value: "进口", url: "car/0_0-0.0_0.0-0-0-0-3-0-0-0-0" },
+        { key: "SCFS", value: "国产", url: "car/0_0-0.0_0.0-0-0-0-1-0-0-0-0/" },
+        { key: "SCFS", value: "进口", url: "car/0_0-0.0_0.0-0-0-0-3-0-0-0-0/" },
         // 级别
         { key: "JB", value: "微型车", url: "a00/" },
         { key: "JB", value: "小型车", url: "a0/" },
